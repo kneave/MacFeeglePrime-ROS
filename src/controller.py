@@ -4,6 +4,13 @@ from std_msgs.msg import String
 import time
 import serial
 
+def try_parse_int(s):
+  try:
+    return int(s)
+  except ValueError:
+    #print("Error parsing: " + s)
+    return 0
+
 def talker():
     ser = serial.Serial(
         port='/dev/serial0',
@@ -22,9 +29,8 @@ def talker():
 
     while not rospy.is_shutdown():
         # Read a string from serial
-        text = str(ser.readline())
-        command = text[2:][:-5])
-
+        command = str(ser.readline())
+        
         # Split the string and interpret
         commands = command.split(',')
 
@@ -38,15 +44,41 @@ def talker():
         # 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,       11, 12, 13
         # int,int,int,b,  int,int,int,b,  b,  b,  int,      b,  b,  b
 
-        lx = int(commands[0])
-        ly = int(commands[1])
-        lz = int(commands[2])
+        try:
+            # Parse left stick
+            lx = try_parse_int(commands[0])
+            ly = try_parse_int(commands[1])
+            lz = try_parse_int(commands[2])
+            lb = bool(commands[3])
 
-        debug = str(lx) + ',' + str(ly) + ',' + str(lz) 
+            # Parse right stick
+            rx = try_parse_int(commands[4])
+            ry = try_parse_int(commands[5])
+            rz = try_parse_int(commands[6])
+            rb = try_parse_int(commands[7])
 
-        rospy.loginfo(debug)
-        motor_pub.publish(command)
-        #rate.sleep()
+            # Switches
+            s1 = try_parse_int(commands[8])
+            s2 = try_parse_int(commands[9])
+            s3_three = try_parse_int(commands[10])
+            s4 = try_parse_int(commands[11])
+            s5 = try_parse_int(commands[12])
+            
+            p1 = try_parse_int(commands[13])
+
+            # s1 is drive/arms mode
+            if s1 == True:
+                motor = str(lx) + ',' + str(ly) + ',' + str(lz) 
+                rospy.loginfo("Motor: " + motor)
+                motor_pub.publish(motor)
+
+                head = str(rx) + ',' + str(ry) + ',' + str(rz)
+                rospy.loginfo("Head: " + head)
+                head_pub.publish(head)
+            
+        except:
+            rospy.loginfo("Error parsing: " + command)
+            continue 
 
 if __name__ == '__main__':
     talker()
