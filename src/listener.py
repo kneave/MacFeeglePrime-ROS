@@ -19,7 +19,7 @@ def callback(data):
 
     setmotors(int(commands[0]), int(commands[1]))
 
-    time.sleep(0.1)
+    time.sleep(0.09)
 
     setmotors(0,0)
 
