@@ -13,31 +13,21 @@ motor2 = 0
 last_message = 0
 
 def callback(data):
-    global motor1, motor2, last_message
-
     rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
-    
-    if data.data == 'w':
-        setmotors(50,50)
-    elif data.data == 'r':
-        setmotors(50,-50)
-    elif data.data == 'l':
-        setmotors(-50, 50)
-    elif data.data == 'b':
-        setmotors(-50, -50)
-    else:
-        setmotors(0,0)
-    
-    last_message = time.time()
+    command = str(data.data)
+    commands = command.split(',')
+
+    setmotors(int(commands[0]), int(commands[1]))
+
+    time.sleep(0.1)
+
+    setmotors(0,0)
 
 def setmotors(m1, m2):
-    global motor1, motor2
-    motor1 = m2
-    motor2 = m1
+    redboard.M1(m1)
+    redboard.M2(m2)
 
 def listener():
-    global motor1, motor2, last_message
-
     # In ROS, nodes are uniquely named. If two nodes with the same
     # name are launched, the previous one is kicked off. The
     # anonymous=True flag means that rospy will choose a unique
@@ -45,14 +35,6 @@ def listener():
     # run simultaneously.
     rospy.init_node('motor_driver', anonymous=True)
     rospy.Subscriber('motor', String, callback)
-
-    while True:
-        if(time.time() - last_message > 0.08):
-            motor1 = 0
-            motor2 = 0
-        
-        redboard.M1(motor1)
-        redboard.M2(motor2)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
