@@ -17,11 +17,21 @@ def callback(data):
     command = str(data.data)
     commands = command.split(',')
 
+    setservos(int(commands[0]), int(commands[1]))
+
 def setservos(pan, tilt):
     global pan_value, tilt_value
 
-    pan_value += pan
-    tilt_value += tilt
+    pan_max = 35
+    tilt_max = 35
+
+    new_pan = pan_value + pan
+    if(abs(new_pan) < pan_max):
+        pan_value = new_pan
+
+    new_tilt = tilt_value + tilt
+    if(abs(new_tilt) < tilt_max):
+        tilt_value
 
     redboard.servo21(pan_value)
     redboard.servo22(tilt_value)
