@@ -8,24 +8,23 @@ import redboard
 
 from std_msgs.msg import String
 
-motor1 = 0
-motor2 = 0
-last_message = 0
+#  Servo values, 0 is centre
+pan_value = 0
+tilt_value = 0
 
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
     command = str(data.data)
     commands = command.split(',')
 
-    setmotors(int(commands[0]), int(commands[1]))
+def setservos(pan, tilt):
+    global pan_value, tilt_value
 
-    time.sleep(0.09)
+    pan_value += pan
+    tilt_value += tilt
 
-    setmotors(0,0)
-
-def setmotors(m1, m2):
-    redboard.M1(m1)
-    redboard.M2(m2)
+    redboard.servo21(pan_value)
+    redboard.servo22(tilt_value)
 
 def listener():
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -33,12 +32,13 @@ def listener():
     # anonymous=True flag means that rospy will choose a unique
     # name for our 'listener' node so that multiple listeners can
     # run simultaneously.
-    rospy.init_node('motor_driver', anonymous=True)
-    rospy.Subscriber('motor', String, callback)
+    rospy.init_node('head_driver', anonymous=True)
+    rospy.Subscriber('head', String, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
 if __name__ == '__main__':
-    print("listening...")
+    print("Head driver listening...")
+    setservos(0, 0)
     listener()

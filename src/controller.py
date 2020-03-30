@@ -28,6 +28,14 @@ def steering(x, y):
 
     return int(left), int(right)
 
+def head_movement(pan, tilt):
+    #  Reduces the number from the joystick by a factor of 10
+    #  Inverts camera look because I'm not an animal
+    pan = int(pan * 0.1)
+    tilt = int(tilt * -0.1)
+
+    return pan, tilt
+
 def try_parse_int(s):
   try:
     return int(s)
@@ -66,9 +74,7 @@ def talker():
         #
         # LX, LY, LZ, LB, RX, RY, RZ, RB, S1, S2, S3_three, S4, S5, P1
         # 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,       11, 12, 13
-        # int,int,int,b,  int,int,int,b,  b,  b,  int,      b,  b,  b
 
-        #try:
         # Parse left stick
         lx = try_parse_int(commands[0])
         ly = try_parse_int(commands[1])
@@ -97,9 +103,10 @@ def talker():
             rospy.loginfo("Motor: " + motor)
             motor_pub.publish(motor)
 
-            # head = str(rx) + ',' + str(ry) + ',' + str(rz)
-            # rospy.loginfo("Head: " + head)
-            # head_pub.publish(head)
+            pan, tilt = head_movement(rx, ry)
+            head = str(pan) + ',' + str(tilt)
+            rospy.loginfo("Head: " + head)
+            head_pub.publish(head)
         
         rate.sleep()
 
