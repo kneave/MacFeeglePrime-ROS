@@ -15,8 +15,8 @@ def steering(x, y):
     t -= math.pi / 4
 
     # back to cartesian
-    left = r * math.cos(t)
-    right = r * math.sin(t)
+    left = r * math.sin(t)
+    right = r * math.cos(t)
 
     # rescale the new coords
     left = left * math.sqrt(2)
