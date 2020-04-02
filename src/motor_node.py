@@ -6,7 +6,7 @@ import sys
 sys.path.append('/home/ubuntu/RedBoard')
 import redboard
 
-from std_msgs.msg import String
+from std_msgs.msg import Int16MultiArray
 
 motor1 = 0
 motor2 = 0
@@ -14,10 +14,8 @@ last_message = 0
 
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
-    command = str(data.data)
-    commands = command.split(',')
-
-    setmotors(int(commands[0]), int(commands[1]))
+    
+    setmotors(data.data[0]), data.data[1])
 
     time.sleep(0.09)
 
@@ -34,11 +32,11 @@ def listener():
     # name for our 'listener' node so that multiple listeners can
     # run simultaneously.
     rospy.init_node('motor_driver', anonymous=True)
-    rospy.Subscriber('motor', String, callback)
+    rospy.Subscriber('motor_controller', Int16MultiArray, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
 if __name__ == '__main__':
-    print("listening...")
+    print("Motor node listening...")
     listener()
