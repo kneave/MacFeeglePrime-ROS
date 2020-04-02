@@ -15,7 +15,7 @@ last_message = 0
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
     
-    setmotors(data.data[0]), data.data[1])
+    setmotors(data.data[0], data.data[1])
 
     time.sleep(0.09)
 
