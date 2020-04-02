@@ -14,7 +14,7 @@ tilt_value = 0
 
 def callback(data):    
     rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
-    setservos(data.data[0]), data.data[1])
+    setservos(data.data[0], data.data[1])
     
 def listener():
     # In ROS, nodes are uniquely named. If two nodes with the same
