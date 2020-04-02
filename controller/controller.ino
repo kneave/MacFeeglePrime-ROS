@@ -1,4 +1,13 @@
-#define hwserial Serial1
+#define USE_TEENSY_HW_SERIAL
+
+#include <ros.h>
+#include <std_msgs/Int16MultiArray.h>
+#include <math.h>
+
+ros::NodeHandle  nh;
+
+std_msgs::Int16MultiArray motor_array;
+ros::Publisher motor_pub("motor_controller", &motor_array);
 
 //  Trim values
 int lx_trim = 0;
@@ -12,8 +21,7 @@ int rz_trim = 0;
 int deadspot = 15;
 
 // the setup routine runs once when you press reset:
-void setup() {
-  
+void setup() { 
   pinMode(2, INPUT_PULLDOWN);
   pinMode(3, INPUT_PULLDOWN);
   pinMode(4, INPUT_PULLDOWN);
@@ -26,7 +34,17 @@ void setup() {
   // initialize serial communication at 9600 bits per second:
   Serial.begin(115200);
   
-  hwserial.begin(115200);
+  nh.initNode();
+    
+  motor_array.layout.dim = (std_msgs::MultiArrayDimension *)
+  malloc(sizeof(std_msgs::MultiArrayDimension)*2);
+  motor_array.layout.dim[0].label = "motors";
+  motor_array.layout.dim[0].size = 2;
+  motor_array.layout.dim[0].stride = 1;
+  motor_array.layout.data_offset = 0;
+  motor_array.data_length = 2;
+  
+  nh.advertise(motor_pub);
 }
 
 //  Creates a deadspot around 0
@@ -75,29 +93,38 @@ void loop() {
   int rx = check_deadspot(sensorValueRX + rx_trim);
   int ry = check_deadspot(sensorValueRY + ry_trim); 
   int rz = check_deadspot(sensorValueRZ + rz_trim);
-
-  
-  String rightStick = String(rx) + "," + 
-                      String(ry) + "," + 
-                      String(rz) + "," + 
-                      String(buttonPressR);
-
-  String leftStick = String(lx) + "," + 
-                     String(ly) + "," + 
-                     String(lz) + "," + 
-                     String(buttonPressL);
-                     
+           
   int threeway = switch3 - switch4;
 
-  String buttons =  String(switch1) + "," +
-                    String(switch2) + "," +
-                    String(threeway) + "," +
-                    String(switch5) + "," +
-                    String(switch6) + "," +
-                    String(sensorValuePot);
-                    
-  Serial.println(leftStick + "," + rightStick + "," + buttons);
-  hwserial.println(leftStick + "," + rightStick + "," + buttons);
-      
-  delay(100);        // delay in between reads for stability
+  if(switch1 == 1)
+  {
+    //  Calculate the motor values
+
+    // convert to polar
+    float r = hypot(lx, ly);
+    float t = atan2(ly, lx);
+    
+    // rotate by 45 degrees
+    t -= M_PI_4;
+    
+    // back to cartesian
+    float left = r * sin(t);
+    float right = r * cos(t);
+    
+    // rescale the new coords
+    left = left * sqrt(2);
+    right = right * sqrt(2);
+    
+    // clamp to -1/+1
+    left = max(-100, min(left, 100));
+    right = max(-100, min(right, 100));
+    
+    motor_array.data[0] = int(left);
+    motor_array.data[1] = int(right);    
+
+    motor_pub.publish( &motor_array );
+    nh.spinOnce();
+  }
+        
+  delay(30);        // delay in between reads for stability
 }
