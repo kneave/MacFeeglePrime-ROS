@@ -9,6 +9,9 @@ ros::NodeHandle  nh;
 std_msgs::Int16MultiArray motor_array;
 ros::Publisher motor_pub("motor_controller", &motor_array);
 
+std_msgs::Int16MultiArray head_array;
+ros::Publisher head_pub("head_controller", &head_array);
+
 //  Trim values
 int lx_trim = 0;
 int ly_trim = 0;
@@ -35,7 +38,8 @@ void setup() {
   Serial.begin(115200);
   
   nh.initNode();
-    
+
+  //  Instatiate motor array
   motor_array.layout.dim = (std_msgs::MultiArrayDimension *)
   malloc(sizeof(std_msgs::MultiArrayDimension)*2);
   motor_array.layout.dim[0].label = "motors";
@@ -43,8 +47,18 @@ void setup() {
   motor_array.layout.dim[0].stride = 1;
   motor_array.layout.data_offset = 0;
   motor_array.data_length = 2;
+
+  //  Instantiate head array
+  head_array.layout.dim = (std_msgs::MultiArrayDimension *)
+  malloc(sizeof(std_msgs::MultiArrayDimension)*2);
+  head_array.layout.dim[0].label = "head";
+  head_array.layout.dim[0].size = 2;
+  head_array.layout.dim[0].stride = 1;
+  head_array.layout.data_offset = 0;
+  head_array.data_length = 2;
   
   nh.advertise(motor_pub);
+  nh.advertise(head_pub);
 }
 
 //  Creates a deadspot around 0
@@ -123,7 +137,17 @@ void loop() {
     motor_array.data[1] = int(right);    
 
     motor_pub.publish( &motor_array );
-    nh.spinOnce();
+
+    //  calculate the head movement values
+    int pan = rx / 10;
+    int tilt = ry / 10; 
+
+    head_array.data[0] = pan;
+    head_array.data[1] = tilt;
+
+    head_pub.publish( &head_array );
+    
+    nh.spinOnce();   
   }
         
   delay(30);        // delay in between reads for stability
