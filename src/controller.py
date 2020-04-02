@@ -53,7 +53,7 @@ def talker():
         timeout=1
     )
 
-    rospy.init_node('motor_controller', anonymous=True)
+    rospy.init_node('controller_node', anonymous=True)
     motor_pub = rospy.Publisher('motor', String, queue_size=10)
     head_pub = rospy.Publisher('head', String, queue_size=10)
     
