@@ -143,7 +143,7 @@ void loop() {
     int tilt = ry / 10; 
 
     head_array.data[0] = pan;
-    head_array.data[1] = tilt;
+    head_array.data[1] = tilt * -1;
 
     head_pub.publish( &head_array );
     
