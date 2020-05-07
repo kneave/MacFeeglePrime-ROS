@@ -13,13 +13,8 @@ motor2 = 0
 last_message = 0
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)
-    
+    rospy.loginfo(rospy.get_caller_id() + 'RCVD: %s', data.data)    
     setmotors(data.data[0], data.data[1])
-
-    time.sleep(0.09)
-
-    setmotors(0,0)
 
 def setmotors(m1, m2):
     redboard.M1(m1)
